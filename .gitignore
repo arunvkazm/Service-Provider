@@ -1,0 +1,33 @@
+# Node.js dependencies
+/node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build directory
+/dist
+/build
+
+# Dependency directories
+.babelrc.js
+.eslintrc.js
+
+# IDE files
+.vscode/
+.idea/
+
+# Coverage directory
+/coverage
+
+# Debug directories
+/debug/
+
