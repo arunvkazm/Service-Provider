@@ -12,6 +12,10 @@ const ServiceProviderSchema = new mongoose.Schema({
     isVerified: { type: Boolean, default: false },
     resetOtp: { type: String },
     otpExpires: { type: Date },
+    location: {
+        latitude: { type: String,default:"" },
+        longitude: { type: String,default:"" }
+    }
 }, { timestamps: true });
 
 // Hash password before saving

@@ -6,15 +6,18 @@ const UserSchema = new mongoose.Schema(
         fullName: { type: String, required: true },
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
-        role: { type: String, default:"client"},
-        // Email verification
+        role: { type: String, default: "client" },
         verified: { type: Boolean, default: false },
-        // OTP for password reset
-        resetOtp: { type: String }, // OTP will be stored as a string
-        otpExpires: { type: Date }, // Expiration timestamp for the OTP
+        resetOtp: { type: String },
+        otpExpires: { type: Date },
+        location: {
+            latitude: { type: String,default:"" },
+            longitude: { type: String,default:"" }
+        }
     },
-    { timestamps: true } // Automatically add createdAt and updatedAt fields
+    { timestamps: true } 
 );
+
 
 // Middleware: Hash password before saving
 UserSchema.pre('save', async function (next) {

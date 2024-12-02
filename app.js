@@ -33,7 +33,8 @@ app.use('/api', apiLimiter); // Apply to all API routes
 
 // Routes
 app.use('/api/auth', require('./src/routes/authRoutes'));
-app.use('/api/admin/industries', require('./src/routes/industryRoutes')); // Authentication routes
+app.use('/api/admin/industries', require('./src/routes/industryRoutes')); 
+app.use('/api/admin/promotional-ads',require('./src/routes/promotionalAdsRoutes'));// Authentication routes
 // app.use('/api/users', require('./routes/userRoutes')); // User-related routes
 // app.use('/api/jobs', require('./routes/jobRoutes')); // Job management routes
 // app.use('/api/providers', require('./routes/providerRoutes')); // Service provider routes

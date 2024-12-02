@@ -1,10 +1,10 @@
 const passport = require('passport');
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
 const LocalStrategy = require('passport-local').Strategy;
-const User = require('../models/User');
-const Admin = require('../models/Admin');
+const User = require('../src/model/userModel');
+const Admin = require('../src/model/adminModel');
 
-
+// JWT Strategy configuration
 passport.use(
     new JwtStrategy(
         {
@@ -13,17 +13,28 @@ passport.use(
         },
         async (payload, done) => {
             try {
-                const user = await User.findById(payload.id) || await Admin.findById(payload.id);
-                if (!user) return done(null, false);
-                return done(null, user);
+                // Check if the payload ID belongs to a User or Admin
+                const user = await User.findById(payload.id);
+                
+                if (user) {
+                    return done(null, user);
+                }
+
+                const admin = await Admin.findById(payload.id);
+                if (admin) {
+                    return done(null, admin);
+                }
+
+                return done(null, false, { message: 'User not found' });
             } catch (error) {
-                done(error, false);
+                console.error('Error during JWT authentication:', error);
+                return done(error, false);
             }
         }
     )
 );
 
-// Local Strategy for login (Admin)
+// Local Strategy for Admin login
 passport.use(
     'admin-local',
     new LocalStrategy(async (username, password, done) => {
@@ -34,6 +45,7 @@ passport.use(
             }
             return done(null, admin);
         } catch (error) {
+           console.error('Error during local strategy authentication:', error);
             done(error, false);
         }
     })

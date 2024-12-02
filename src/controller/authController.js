@@ -145,12 +145,6 @@ if (!["client", "service_provider"].includes(role)) {
 
   try {
 
-    
-    // const user = await User.findOne({ email });
-    // if (!user || !(await user.comparePassword(password))) {
-    //   return sendResponse(res, 401, false, "Invalid credentials");
-    // }
-
     let user;
 
     if (role === "client") {
