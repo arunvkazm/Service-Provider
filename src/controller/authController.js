@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
-const User = require("../model/userModel");
-const ServiceProvider = require("../model/serviceProviderModel");
+const userModel = require("../model/userModel");
+const serviceProviderModel = require("../model/serviceProviderModel");
 const Admin = require("../model/adminModel");
 const nodemailer = require("nodemailer");
 const { sendResponse } = require("../utils/responseHelper");
@@ -31,29 +31,28 @@ const generateToken = (user) => {
   });
 };
 
-// User Registration
 // Registration API
 exports.register = async (req, res) => {
   const { role, fullName, email, password, regNumber, industry, industryType } =
     req.body;
 
   // Validate Role
-  if (!["client", "service_provider"].includes(role)) {
+  if (!["user", "service_provider"].includes(role)) {
     return sendResponse(
       res,
       400,
       false,
-      'Invalid role. Accepted roles are "client" or "service_provider".'
+      'Invalid role. Accepted roles are "user" or "service_provider".'
     );
   }
 
   try {
     // Check if the email is already registered under any role
-    const existingClient = await User.findOne({ email });
-    const existingProvider = await ServiceProvider.findOne({ email });
+    const existingUser = await userModel.findOne({ email });
+    const existingProvider = await serviceProviderModel.findOne({ email });
 
-    if (existingClient || existingProvider) {
-      const registeredRole = existingClient ? "client" : "service_provider";
+    if (existingUser || existingProvider) {
+      const registeredRole = existingUser ? "user" : "service_provider";
       return sendResponse(
         res,
         400,
@@ -64,8 +63,8 @@ exports.register = async (req, res) => {
 
     let user;
 
-    if (role === "client") {
-      user = new User({ fullName, email, password });
+    if (role === "user") {
+      user = new userModel({ fullName, email, password });
     } else if (role === "service_provider") {
       if (!industry || !industryType) {
         return sendResponse(
@@ -75,7 +74,7 @@ exports.register = async (req, res) => {
           "Missing required fields for service_provider registration."
         );
       }
-      user = new ServiceProvider({
+      user = new serviceProviderModel({
         fullName,
         email,
         password,
@@ -115,7 +114,7 @@ exports.verifyEmail = async (req, res) => {
 
   try {
     const { email } = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findOne({ email });
+    const user = await userModel.findOne({ email });
     if (!user) {
       return sendResponse(res, 404, false, "Invalid verification link.");
     }
@@ -134,12 +133,12 @@ exports.login = async (req, res) => {
   const { email, password,role } = req.body;
 
 // Validate Role
-if (!["client", "service_provider"].includes(role)) {
+if (!["user", "service_provider"].includes(role)) {
     return sendResponse(
       res,
       400,
       false,
-      'Invalid role. Accepted roles are "client" or "service_provider".'
+      'Invalid role. Accepted roles are "user" or "service_provider".'
     );
   }
 
@@ -147,10 +146,10 @@ if (!["client", "service_provider"].includes(role)) {
 
     let user;
 
-    if (role === "client") {
-      user = await User.findOne({ email });
+    if (role === "user") {
+      user = await userModel.findOne({ email });
     } else if (role === "service_provider") {
-      user = await ServiceProvider.findOne({ email });
+      user = await serviceProviderModel.findOne({ email });
     }
 
     if (!user || !(await user.comparePassword(password))) {
@@ -161,7 +160,7 @@ if (!["client", "service_provider"].includes(role)) {
 
     const token = generateToken(user);
 
-    if (role === "client") {
+    if (role === "user") {
         return sendResponse(res, 200, true, "User login successful", {
           token,
           userId: user._id,
@@ -207,24 +206,24 @@ exports.adminLogin = (req, res, next) => {
 exports.forgotPassword = async (req, res) => {
   const { email,role } = req.body;
 
-  if (!["client", "service_provider"].includes(role)) {
+  if (!["user", "service_provider"].includes(role)) {
     return sendResponse(
       res,
       400,
       false,
-      'Invalid role. Accepted roles are "client" or "service_provider".'
+      'Invalid role. Accepted roles are "user" or "service_provider".'
     );
   }
 
   let user;
 
-  if (role === "client") {
-    user = await User.findOne({ email });
+  if (role === "user") {
+    user = await userModel.findOne({ email });
   } else if (role === "service_provider") {
-    user = await ServiceProvider.findOne({ email });
+    user = await serviceProviderModel.findOne({ email });
   }
 
-  //const user = await User.findOne({ email });
+  //const user = await userModel.findOne({ email });
   if (!user) {
     return sendResponse(
       res,
@@ -255,21 +254,21 @@ exports.forgotPassword = async (req, res) => {
 exports.verifyOtp = async (req, res) => {
   const { email, otp,role } = req.body;
 
-  if (!["client", "service_provider"].includes(role)) {
+  if (!["user", "service_provider"].includes(role)) {
     return sendResponse(
       res,
       400,
       false,
-      'Invalid role. Accepted roles are "client" or "service_provider".'
+      'Invalid role. Accepted roles are "user" or "service_provider".'
     );
   }
 
   let user;
 
-  if (role === "client") {
-    user = await User.findOne({ email });
+  if (role === "user") {
+    user = await userModel.findOne({ email });
   } else if (role === "service_provider") {
-    user = await ServiceProvider.findOne({ email });
+    user = await serviceProviderModel.findOne({ email });
   }
 
   if (!user) {
@@ -296,21 +295,21 @@ exports.verifyOtp = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   const { email, newPassword, role } = req.body;
 
-  if (!["client", "service_provider"].includes(role)) {
+  if (!["user", "service_provider"].includes(role)) {
     return sendResponse(
       res,
       400,
       false,
-      'Invalid role. Accepted roles are "client" or "service_provider".'
+      'Invalid role. Accepted roles are "user" or "service_provider".'
     );
   }
 
   let user;
 
-  if (role === "client") {
-    user = await User.findOne({ email });
+  if (role === "user") {
+    user = await userModel.findOne({ email });
   } else if (role === "service_provider") {
-    user = await ServiceProvider.findOne({ email });
+    user = await serviceProviderModel.findOne({ email });
   }
   if (!user) {
     return sendResponse(res, 404, false, "User not found.");

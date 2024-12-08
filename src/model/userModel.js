@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-const UserSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
     {
         fullName: { type: String, required: true },
         email: { type: String, required: true, unique: true },
+        phoneNumber: { type: String, required: true },
+        address: { type: String, required: true },
         password: { type: String, required: true },
-        role: { type: String, default: "client" },
+        role: { type: String, default: "user" },
         verified: { type: Boolean, default: false },
         resetOtp: { type: String },
         otpExpires: { type: Date },
@@ -20,22 +22,22 @@ const UserSchema = new mongoose.Schema(
 
 
 // Middleware: Hash password before saving
-UserSchema.pre('save', async function (next) {
+userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
     this.password = await bcrypt.hash(this.password, 10);
     next();
 });
 
-UserSchema.statics.isEmailTaken = async function (email) {
+userSchema.statics.isEmailTaken = async function (email) {
     return !!(await this.findOne({ email }));
 };
 // Method: Compare password
-UserSchema.methods.comparePassword = function (candidatePassword) {
+userSchema.methods.comparePassword = function (candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
 };
 
 // Method: Generate OTP
-UserSchema.methods.generateOtp = function () {
+userSchema.methods.generateOtp = function () {
     const otp = Math.floor(1000 + Math.random() * 9000).toString(); 
     this.resetOtp = otp;
     this.otpExpires = Date.now() + 5 * 60 * 1000; // OTP valid for 5 minutes
@@ -43,16 +45,16 @@ UserSchema.methods.generateOtp = function () {
 };
 
 // Method: Validate OTP
-UserSchema.methods.validateOtp = function (otp) {
+userSchema.methods.validateOtp = function (otp) {
     if (this.resetOtp !== otp) return false; // Incorrect OTP
     if (Date.now() > this.otpExpires) return false; // Expired OTP
     return true;
 };
 
 // Method: Clear OTP (after verification)
-UserSchema.methods.clearOtp = function () {
+userSchema.methods.clearOtp = function () {
     this.resetOtp = null;
     this.otpExpires = null;
 };
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('User', userSchema);

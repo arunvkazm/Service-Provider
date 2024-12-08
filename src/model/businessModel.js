@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const IndustrySchema = new mongoose.Schema({
+const busniessSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -9,4 +9,4 @@ const IndustrySchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-module.exports = mongoose.model('Industry', IndustrySchema);
+module.exports = mongoose.model('Business', busniessSchema);

@@ -3,9 +3,9 @@ const Industry = require('../model/industryModel');
 // Create a new industry
 exports.createIndustry = async (req, res, next) => {
     try {
-        const { name, businessType } = req.body;
+        const { name } = req.body;
 
-        const industry = await Industry.create({ name, businessType });
+        const industry = await Industry.create({ name});
         res.status(201).json({ success: true, data: industry });
     } catch (error) {
         next(error); // Pass to error handler
@@ -38,11 +38,11 @@ exports.getIndustryById = async (req, res, next) => {
 // Update an industry
 exports.updateIndustry = async (req, res, next) => {
     try {
-        const { name, businessType } = req.body;
+        const { name } = req.body;
 
         const industry = await Industry.findByIdAndUpdate(
             req.params.id,
-            { name, businessType },
+            { name},
             { new: true, runValidators: true }
         );
 

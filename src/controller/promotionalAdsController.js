@@ -113,7 +113,7 @@ exports.updatePromotionalAds = async (req, res) => {
 };
 
 exports.deletePromotionalAds = async (req, res) => {
-  const adId = req.params.id; // Ad ID from request parameters
+  const adId = req.params.id; 
 
   try {
     // Find the ad by ID
