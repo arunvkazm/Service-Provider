@@ -2,20 +2,21 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const ServiceProviderSchema = new mongoose.Schema({
-    fullName: { type: String, required: true },
+    businessName: { type: String, required: true },
+    contactName: { type: String, required: true },
+    address: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    phoneNumber: { type: String, required: true },
+    abnNo: { type: String, required: true },
+    businessType: { type: String, required: true },
+    serviceType: { type: String, required: true },
     password: { type: String, required: true },
     image: { type: String, required: true },
-    industry: { type: String, required: true },
-    businessName: { type: String, required: true },
-    businessType: { type: String, required: true },
-    contact: { type: String, required: true },
-    address: { type: String, required: true },
-    phoneNumber: { type: String, required: true },
-    regNumber: { type: String, required: true },
+    role: { type: String, default: "service_provider" },
     isVerified: { type: Boolean, default: false },
     resetOtp: { type: String },
     otpExpires: { type: Date },
+    isTermsCondAccepted: { type: Boolean, default: false  },
     location: {
         latitude: { type: String,default:"" },
         longitude: { type: String,default:"" }

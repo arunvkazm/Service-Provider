@@ -6,6 +6,13 @@ const Admin = require("../model/adminModel");
 const nodemailer = require("nodemailer");
 const { sendResponse } = require("../utils/responseHelper");
 const loggers = require("../config/logger");
+const cloudinary = require("cloudinary").v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const sendEmail = async (to, subject, html) => {
   const transporter = nodemailer.createTransport({
@@ -33,8 +40,20 @@ const generateToken = (user) => {
 
 // Registration API
 exports.register = async (req, res) => {
-  const { role, fullName, email, password, regNumber, industry, industryType } =
-    req.body;
+  const {
+    role,
+    fullName,
+    businessName,
+    contactName,
+    email,
+    phoneNumber,
+    address,
+    abnNo,
+    businessType,
+    serviceType,
+    password,
+    isTermsCondAccepted
+  } = req.body;
 
   // Validate Role
   if (!["user", "service_provider"].includes(role)) {
@@ -64,9 +83,9 @@ exports.register = async (req, res) => {
     let user;
 
     if (role === "user") {
-      user = new userModel({ fullName, email, password });
+      user = new userModel({ fullName, email, phoneNumber, address, password });
     } else if (role === "service_provider") {
-      if (!industry || !industryType) {
+      if (!businessType || !serviceType) {
         return sendResponse(
           res,
           400,
@@ -74,13 +93,29 @@ exports.register = async (req, res) => {
           "Missing required fields for service_provider registration."
         );
       }
+
+      if (!req.file) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Image file is required" });
+      }
+
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "service_providers/profile",
+      });
+
       user = new serviceProviderModel({
-        fullName,
+        businessName,
+        contactName,
+        address,
         email,
+        phoneNumber,
+        abnNo,
         password,
-        regNumber,
-        industry,
-        industryType,
+        businessType,
+        serviceType,
+        isTermsCondAccepted,
+        image: result.secure_url,
       });
     }
 
@@ -104,6 +139,7 @@ exports.register = async (req, res) => {
       "User registered successfully. Please check your email to verify your account."
     );
   } catch (error) {
+    console.error("EERROR: " + error);
     sendResponse(res, 500, false, "An error occurred during registration.");
   }
 };
@@ -130,10 +166,10 @@ exports.verifyEmail = async (req, res) => {
 
 // User Login
 exports.login = async (req, res) => {
-  const { email, password,role } = req.body;
+  const { email, password, role } = req.body;
 
-// Validate Role
-if (!["user", "service_provider"].includes(role)) {
+  // Validate Role
+  if (!["user", "service_provider"].includes(role)) {
     return sendResponse(
       res,
       400,
@@ -143,7 +179,6 @@ if (!["user", "service_provider"].includes(role)) {
   }
 
   try {
-
     let user;
 
     if (role === "user") {
@@ -156,30 +191,28 @@ if (!["user", "service_provider"].includes(role)) {
       return sendResponse(res, 401, false, "Invalid credentials");
     }
 
-
-
     const token = generateToken(user);
 
     if (role === "user") {
-        return sendResponse(res, 200, true, "User login successful", {
-          token,
-          userId: user._id,
-          role: user.role,
-          fullName: user.fullName,
-          email: user.email,
-        });
-      } else if (role === "service_provider") {
-        return sendResponse(res, 200, true, "Service provider login successful", {
-          token,
-          userId: user._id,
-          role: user.role,
-          fullName: user.fullName,
-          email: user.email,
-          industry: user.industry,
-          industryType: user.industryType,
-          regNumber:user.regNumber,
-        });
-      }
+      return sendResponse(res, 200, true, "User login successful", {
+        token,
+        userId: user._id,
+        role: user.role,
+        fullName: user.fullName,
+        email: user.email,
+      });
+    } else if (role === "service_provider") {
+      return sendResponse(res, 200, true, "Service provider login successful", {
+        token,
+        userId: user._id,
+        role: user.role,
+        fullName: user.fullName,
+        email: user.email,
+        industry: user.industry,
+        industryType: user.industryType,
+        regNumber: user.regNumber,
+      });
+    }
   } catch (error) {
     sendResponse(res, 500, false, "An error occurred during login.");
   }
@@ -204,7 +237,7 @@ exports.adminLogin = (req, res, next) => {
 
 // Forgot Password
 exports.forgotPassword = async (req, res) => {
-  const { email,role } = req.body;
+  const { email, role } = req.body;
 
   if (!["user", "service_provider"].includes(role)) {
     return sendResponse(
@@ -252,7 +285,7 @@ exports.forgotPassword = async (req, res) => {
 
 // Verify OTP
 exports.verifyOtp = async (req, res) => {
-  const { email, otp,role } = req.body;
+  const { email, otp, role } = req.body;
 
   if (!["user", "service_provider"].includes(role)) {
     return sendResponse(

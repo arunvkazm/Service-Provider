@@ -1,5 +1,5 @@
 const cloudinary = require('cloudinary').v2;
-const PromotionalAd = require("../model/promotionalAdsModel"); // Make sure to import your PromotionalAd model
+const promotionalModel = require("../model/promotionalAdsModel"); // Make sure to import your PromotionalAd model
 const { sendResponse } = require("../utils/responseHelper");
 
 // // Ensure that Cloudinary is properly configured in the environment variables
@@ -11,6 +11,8 @@ cloudinary.config({
 
 exports.addPromotionalAd = async (req, res) => {
   const { title, description, targetAudience } = req.body;
+
+
 
   if (!req.file) {
     return res
@@ -25,18 +27,20 @@ exports.addPromotionalAd = async (req, res) => {
     });
 
     // Save ad in the database
-    const newAd = new PromotionalAd({
+    const newAd = new promotionalModel({
       title,
       description,
       image: result.secure_url,
       targetAudience,
-      // createdBy: req.user.id,
     });
 
+    
     await newAd.save();
 
     sendResponse(res, 201, true, "Promotional ad created successfully", newAd);
   } catch (error) {
+    console.error("Error creating promotional ad:", error);
+
     sendResponse(
       res,
       500,
@@ -48,7 +52,7 @@ exports.addPromotionalAd = async (req, res) => {
 
 exports.getPromotionalAds = async (req, res) => {
   try {
-    const ads = await PromotionalAd.find();
+    const ads = await promotionalModel.find();
     if (!ads) {
       return 
       sendResponse(
@@ -74,7 +78,7 @@ exports.updatePromotionalAds = async (req, res) => {
   const adId = req.params.id;
   try {
     // Find the ad to be updated
-    const ad = await PromotionalAd.findById(adId);
+    const ad = await promotionalModel.findById(adId);
     if (!ad) {
       return sendResponse(res, 404, false, "Promotional ad not found");
     }
@@ -117,7 +121,7 @@ exports.deletePromotionalAds = async (req, res) => {
 
   try {
     // Find the ad by ID
-    const ad = await PromotionalAd.findById(adId);
+    const ad = await promotionalModel.findById(adId);
     if (!ad) {
       return sendResponse(res, 404, false, "Promotional ad not found");
     }
@@ -125,7 +129,7 @@ exports.deletePromotionalAds = async (req, res) => {
     const publicId = ad.image.split('/').pop().split('.')[0]; 
     await cloudinary.uploader.destroy(`promotional_ads/${publicId}`); 
 
-    await PromotionalAd.findByIdAndDelete(adId);
+    await promotionalModel.findByIdAndDelete(adId);
 
     sendResponse(res, 200, true, "Promotional ad deleted successfully");
   } catch (error) {
