@@ -16,7 +16,7 @@ const ServiceProviderSchema = new mongoose.Schema({
     isVerified: { type: Boolean, default: false },
     resetOtp: { type: String },
     otpExpires: { type: Date },
-    isTermsCondAccepted: { type: Boolean, default: false  },
+    isTermAccepted: { type: Boolean, default: false  },
     location: {
         latitude: { type: String,default:"" },
         longitude: { type: String,default:"" }

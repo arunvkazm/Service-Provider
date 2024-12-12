@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken");
 const passport = require("passport");
 const userModel = require("../model/userModel");
 const serviceProviderModel = require("../model/serviceProviderModel");
-const Admin = require("../model/adminModel");
 const nodemailer = require("nodemailer");
 const { sendResponse } = require("../utils/responseHelper");
 const loggers = require("../config/logger");
@@ -52,7 +51,7 @@ exports.register = async (req, res) => {
     businessType,
     serviceType,
     password,
-    isTermsCondAccepted
+    isTermAccepted
   } = req.body;
 
   // Validate Role
@@ -83,7 +82,7 @@ exports.register = async (req, res) => {
     let user;
 
     if (role === "user") {
-      user = new userModel({ fullName, email, phoneNumber, address, password });
+      user = new userModel({ fullName, email, phoneNumber, address, password,isTermAccepted });
     } else if (role === "service_provider") {
       if (!businessType || !serviceType) {
         return sendResponse(
@@ -114,7 +113,7 @@ exports.register = async (req, res) => {
         password,
         businessType,
         serviceType,
-        isTermsCondAccepted,
+        isTermAccepted,
         image: result.secure_url,
       });
     }
@@ -200,17 +199,29 @@ exports.login = async (req, res) => {
         role: user.role,
         fullName: user.fullName,
         email: user.email,
+        address:user.address,
+        phoneNumber: user.phoneNumber,
+        isTermAccepted: user.isTermAccepted,
+        verified: user.isVerified,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       });
     } else if (role === "service_provider") {
       return sendResponse(res, 200, true, "Service provider login successful", {
         token,
         userId: user._id,
         role: user.role,
-        fullName: user.fullName,
+        businessName: user.businessName,
+        contactName: user.contactName,
+        address: user.address,
         email: user.email,
-        industry: user.industry,
-        industryType: user.industryType,
-        regNumber: user.regNumber,
+        phoneNumber: user.phoneNumber,
+        abnNo: user.abnNo,
+        businessType: user.businessType,
+        serviceType: user.serviceType,
+        isTermAccepted: user.isTermAccepted,
+        isVerified: user.isVerified,
+        image: user.image,
       });
     }
   } catch (error) {
