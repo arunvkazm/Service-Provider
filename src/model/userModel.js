@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema(
         isTermAccepted:{type: Boolean, default:false},
         isVerified: { type: Boolean, default: false },
         resetOtp: { type: String },
+        verifyOtp:{ type: String},
         otpExpires: { type: Date },
         location: {
             latitude: { type: String,default:"" },

@@ -47,7 +47,7 @@ exports.register = async (req, res) => {
     email,
     phoneNumber,
     address,
-    abnNo,
+    // abnNo,
     businessType,
     serviceType,
     password,
@@ -109,7 +109,7 @@ exports.register = async (req, res) => {
         address,
         email,
         phoneNumber,
-        abnNo,
+        // abnNo,
         password,
         businessType,
         serviceType,
@@ -121,14 +121,26 @@ exports.register = async (req, res) => {
     await user.save();
 
     // Generate verification token
-    const token = generateToken(user);
-    const verificationLink = `${process.env.APP_URL}/api/auth/verify-email?token=${token}`;
+    //const token = generateToken(user);
+    
+   // const verificationLink = `${process.env.APP_URL}/api/auth/verify-email?token=${token}`;
 
     // Send verification email
+    // await sendEmail(
+    //   user.email,
+    //   "Email Verification",
+    //   `<a href="${verificationLink}">Click here to verify your email</a>`
+    // );
+
+    const otp = user.generateOtp(); // Assuming `generateOtp` is a static method on User model
+    user.verifyOtp = otp;
+    user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await user.save();
+
     await sendEmail(
       user.email,
-      "Email Verification",
-      `<a href="${verificationLink}">Click here to verify your email</a>`
+      "Password Reset OTP",
+      `<p>Your OTP is: <b>${otp}</b></p>`
     );
 
     sendResponse(
@@ -145,19 +157,28 @@ exports.register = async (req, res) => {
 
 // Verify Email
 exports.verifyEmail = async (req, res) => {
-  const { token } = req.query;
+
+  const {email,otp} = req.body;
 
   try {
-    const { email } = jwt.verify(token, process.env.JWT_SECRET);
+  
     const user = await userModel.findOne({ email });
     if (!user) {
-      return sendResponse(res, 404, false, "Invalid verification link.");
+      return sendResponse(res, 404, false, "Invalid user.");
+    }
+    
+    if (user.otpExpires < Date.now()) {
+      return sendResponse(res, 401, false, "OTP expired.");
+    }
+    if (user.verifyOtp!== parseInt(otp)) {
+      return sendResponse(res, 401, false, "Invalid OTP");
+    } else {
+      user.verifyOtp = null;
+      user.isVerified = true;
+      await user.save();
+      sendResponse(res, 200, true, "Email verified successfully.");
     }
 
-    user.isVerified = true;
-    await user.save();
-
-    res.redirect(`${process.env.APP_URL}/api/auth/login`);
   } catch (error) {
     sendResponse(res, 400, false, "Verification link expired or invalid.");
   }
@@ -216,7 +237,7 @@ exports.login = async (req, res) => {
         address: user.address,
         email: user.email,
         phoneNumber: user.phoneNumber,
-        abnNo: user.abnNo,
+        // abnNo: user.abnNo,
         businessType: user.businessType,
         serviceType: user.serviceType,
         isTermAccepted: user.isTermAccepted,

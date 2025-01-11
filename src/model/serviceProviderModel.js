@@ -7,7 +7,7 @@ const ServiceProviderSchema = new mongoose.Schema({
     address: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     phoneNumber: { type: String, required: true },
-    abnNo: { type: String, required: true },
+    abnNo: { type: String, required: false },
     businessType: { type: String, required: true },
     serviceType: { type: String, required: true },
     password: { type: String, required: true },
@@ -15,6 +15,7 @@ const ServiceProviderSchema = new mongoose.Schema({
     role: { type: String, default: "service_provider" },
     isVerified: { type: Boolean, default: false },
     resetOtp: { type: String },
+    verifyOtp:{ type: String},
     otpExpires: { type: Date },
     isTermAccepted: { type: Boolean, default: false  },
     location: {
