@@ -82,7 +82,8 @@ exports.register = async (req, res) => {
     let user;
 
     if (role === "user") {
-      user = new userModel({ fullName, email, phoneNumber, address, password,isTermAccepted });
+      // user = new userModel({ fullName, email, phoneNumber, address, password,isTermAccepted });
+      user = new userModel({ fullName, email, phoneNumber, password });
     } else if (role === "service_provider") {
       if (!businessType || !serviceType) {
         return sendResponse(
